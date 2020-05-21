@@ -16,7 +16,7 @@ const sql = (params, query) => {
   } LIMIT 1) a
       WHERE
         ST_Intersects(
-          geom,
+          ${query.geom_column},
           ST_Transform(
             ST_TileEnvelope(${params.z}, ${params.x}, ${params.y}),
             srid
@@ -95,7 +95,7 @@ module.exports = function(fastify, opts, next) {
             error: 'Internal Server Error',
             message: 'unable to connect to database server'
           })
-
+        console.log(request.params);
         client.query(sql(request.params, request.query), function onResult(
           err,
           result
