@@ -1,33 +1,39 @@
 // route query
 const sql = (params, query) => {
   return `
-    WITH mvtgeom as (
+    WITH fields as (
+        select *
+        from ${params.table} test
+        join vts.acl on test.fieldid=acl.field_id
+        where acl.user_id=${params.userid}
+        -- Optional Filter
+        ${query.filter ? ` AND ${query.filter}` : ''}
+    )
+    , mvtgeom as (
       SELECT
         ST_AsMVTGeom (
           ST_Transform(${query.geom_column}, 3857),
           ST_TileEnvelope(${params.z}, ${params.x}, ${params.y})
         ) as geom
         ${query.columns ? `, ${query.columns}` : ''}
-        ${query.id_column ? `, ${query.id_column}` : ''}
+
       FROM
-        ${params.table},
-        (SELECT ST_SRID(${query.geom_column}) AS srid FROM ${
-    params.table
-  } LIMIT 1) a
+        fields
+
       WHERE
         ST_Intersects(
-          ${query.geom_column},
+          geometry,
           ST_Transform(
             ST_TileEnvelope(${params.z}, ${params.x}, ${params.y}),
-            srid
+            3857
           )
         )
 
         -- Optional Filter
-        ${query.filter ? ` AND ${query.filter}` : ''}
     )
     SELECT ST_AsMVT(mvtgeom.*, '${params.table}', 4096, 'geom' ${
     query.id_column ? `, '${query.id_column}'` : ''
+
   }) AS mvt from mvtgeom;
   `
 }
@@ -83,7 +89,7 @@ const schema = {
 module.exports = function(fastify, opts, next) {
   fastify.route({
     method: 'GET',
-    url: '/mvt/:table/:z/:x/:y',
+    url: '/mvt/:table/:userid/:z/:x/:y',
     schema: schema,
     handler: function(request, reply) {
       fastify.pg.connect(onConnect)
