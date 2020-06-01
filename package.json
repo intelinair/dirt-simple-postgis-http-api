@@ -18,5 +18,15 @@
     "fastify-static": "^2.6.0",
     "fastify-swagger": "^2.5.1",
     "pg": "^8.0.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/intelinair/dirt-simple-postgis-http-api.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/intelinair/dirt-simple-postgis-http-api/issues"
+  },
+  "homepage": "https://github.com/intelinair/dirt-simple-postgis-http-api#readme"
 }
